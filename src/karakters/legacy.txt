@@ -1,0 +1,291 @@
+// Calculate the displacement vectors
+float dx = (x + width / 2) - (r.x + r.width / 2);
+float dy = (y + height / 2) - (r.y + r.height / 2);
+
+int combinedHalfWidths = (width + r.width) / 2;
+int combinedHalfHeights = (height + r.height) / 2 - height;
+
+// Check for collision on the x-axis
+if (Math.abs(dx) < combinedHalfWidths && Math.abs(dy) < combinedHalfHeights) {
+    float overlapX = combinedHalfWidths - Math.abs(dx);
+    float overlapY = combinedHalfHeights - Math.abs(dy) - height;
+
+    // Resolve collision
+    Game.text = String.format("overlapX: %f, overlapY: %f", overlapX, overlapY);
+    if (overlapX > overlapY) {
+        if (dy > -height) {
+            // Additional collision response for jumping
+            y = r.y - height;
+            velY = 0;
+            isJumping = false;
+            isGrounded = true;
+        } else {
+            y -= overlapY;
+        }
+    }
+    else {
+        System.out.println(dx);
+        if (dx > 0) {
+            x += overlapX; // ???
+        } else {
+            x -= overlapX; // ???
+        }
+    }
+}
+
+// basic character controller and collision detection
+
+// jumping (space key)
+if (move[2] && !isJumping) {
+    velY -= JUMP_FORCE;
+    isJumping = true;
+}
+
+// gravity
+velY += GRAVITY;
+y += (int)velY;
+
+// collision detector Y
+for (GameObject r : e) {
+    if (this != r && getBounds().intersects(r.getBounds()) &&
+            !(r.type == TYPE.Bullet || r.type == TYPE.Area)) {
+        if (y < r.getY()) {
+            isJumping = false;
+            y = r.getY() - height;
+            platform = r;
+        }
+
+        if (y + height > r.getY() + r.getHeight()) {
+            y = r.getY() + r.getHeight();
+        }
+
+        velY = 0;
+    }
+}
+
+// move X (left and right)
+if (move[0]) velX = 8;
+if (move[1]) velX = -8;
+if (move[0] || move[1]) x += (int)velX;
+
+// collision detector X
+for (GameObject r : e) {
+    if (this != r && getBounds().intersects(r.getBounds()) &&
+            !(r.type == TYPE.Bullet || r.type == TYPE.Area)) {
+
+        if (x < r.getX()) {
+            x = r.getX() - width;
+        }
+
+        if (x + width > r.getX() + r.getWidth()) {
+            x = r.getX() + r.getWidth();
+        }
+
+        velX = 0;
+    }
+}
+
+// world generation offsets example
+
+/*
+        // Print the generated tile data part 2
+        tileData = generateRandomTileData(width, height, totalPlatforms);
+        System.out.println(isLevelBeatable(tileData));
+        // Add solid blocks around the edges
+        for (int x = 0; x < width; x++) {
+//            tileData[0][x] = 1;              // Bottom row
+            tileData[height - 1][x] = 0;     // Top row
+        }
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+//                System.out.print(tileData[y][x] + " ");
+                if (tileData[y][x] == 1) {
+                    e.add(new Block(x * w - width*w/2, y * h - (height*h-h) - (height*h), w, h, Color.GREEN, this, e));
+                }
+            }
+//            System.out.println();
+        }
+        // Print the generated tile data part 3
+        tileData = generateRandomTileData(width, height, totalPlatforms);
+        System.out.println(isLevelBeatable(tileData));
+        // Add solid blocks around the edges
+        for (int x = 0; x < width; x++) {
+//            tileData[0][x] = 1;              // Bottom row
+            tileData[height - 1][x] = 0;     // Top row
+        }
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+//                System.out.print(tileData[y][x] + " ");
+                if (tileData[y][x] == 1) {
+                    e.add(new Block(x * w + width*w/2, y * h - (height*h-h) - (height*h), w, h, Color.BLUE, this, e)));
+                }
+            }
+//            System.out.println();
+        }
+
+        // Print the generated tile data part 4
+        tileData = generateRandomTileData(width, height, totalPlatforms);
+        System.out.println(isLevelBeatable(tileData));
+        // Add solid blocks around the edges
+        for (int x = 0; x < width; x++) {
+//            tileData[0][x] = 1;              // Bottom row
+            tileData[height - 1][x] = 0;     // Top row
+        }
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+//                System.out.print(tileData[y][x] + " ");
+                if (tileData[y][x] == 1) {
+                    e.add(new Block(x * w - width*w/2, y * h - (height*h-h) - (height*h*2), w, h, Color.YELLOW, this, e)));
+                }
+            }
+//            System.out.println();
+        }
+
+ */
+
+         // delete and load world data
+         // lazy load tower generations (no need?)
+         // keep a record of the towers and store them on an separate list and only access it if
+         // the player is within it's borders, and delete the previous tower on the main list for optimizations,
+         // just like in half life
+         /*if (e.getKeyCode() == KeyEvent.VK_N) {
+             em.objects.removeIf(o -> o.type == TYPE.Block && o.color == Color.GREEN); // very cool
+
+             int w = 32, h = 32;
+             // Print the generated tile data part 2
+             int width = 128, height = 512, totalPlatforms = 720; // Control the total number of platforms
+             int[][] tileData = generateRandomTileData(width, height, totalPlatforms, 1000);
+             System.out.println(isLevelBeatable(tileData));
+             spawnEverything(tileData, width*w/2, (height*h), Color.GREEN);
+         }
+
+         if (e.getKeyCode() == KeyEvent.VK_X)
+             em.objects.removeIf(o -> o.type == TYPE.Block && o.color == Color.RED); // very cool*/
+
+// old pathfinder by chatgpt
+
+// A* that kinda works???
+    private static boolean isLevelBeatable(int[][] tileData) {
+        // FIXME: kinda broken, find nearest 0, also trace nearest path
+        int startRow = tileData.length - 2;
+        int startCol = tileData[tileData.length - 1].length - 2;
+        int endRow = 1;
+        int endCol = 1;
+
+        return aStarPathfinding(tileData, startRow, startCol, endRow, endCol);
+    }
+
+    private static boolean aStarPathfinding(int[][] tileData, int startRow, int startCol, int endRow, int endCol) {
+        PriorityQueue<Node> openSet = new PriorityQueue<>();
+        boolean[][] closedSet = new boolean[tileData.length][tileData[0].length];
+
+        openSet.add(new Node(startRow, startCol, 0, null));
+
+        while (!openSet.isEmpty()) {
+            Node current = openSet.poll();
+            int x = current.x;
+            int y = current.y;
+
+            if (x == endRow && y == endCol) {
+                return true;
+            }
+
+            closedSet[x][y] = true;
+
+            for (int[] direction : DIRECTIONS) {
+                int newX = x + direction[0];
+                int newY = y + direction[1];
+
+                if (isValid(newX, newY, tileData) && !closedSet[newX][newY]) {
+                    int newCost = current.cost + 1;
+
+                    boolean found = false;
+                    for (Node node : openSet) {
+                        if (node.x == newX && node.y == newY) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        openSet.add(new Node(newX, newY, newCost, current));
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isValid(int x, int y, int[][] tileData) {
+        return x >= 0 && x < tileData.length && y >= 0 && y < tileData[0].length && tileData[x][y] != 1;
+    }
+
+    private static final int[][] DIRECTIONS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    static class Node implements Comparable<Node> {
+        int x, y;
+        int cost;
+        Node parent;
+
+        public Node(int x, int y, int cost, Node parent) {
+            this.x = x;
+            this.y = y;
+            this.cost = cost;
+            this.parent = parent;
+        }
+
+        @Override
+        public int compareTo(Node other) {
+            return Integer.compare(this.cost, other.cost);
+        }
+    }
+
+// resize
+            double[] scaleFactors = Window.calculateScaleFactors(720, 480, StateManager.GAME_WIDTH, StateManager.GAME_HEIGHT);
+            double scaleFactor = scaleFactors[0];
+            int newWidth = (int) scaleFactors[1];
+            int newHeight = (int) scaleFactors[2];
+
+// screen to world hell
+
+        /*Game.s2wX = (int)(((mouseX - (Window.REAL_WIDTH() / 2 - Window.SCALED_WIDTH() / 2)) / s) - (-x - width/2 + (Window.SCALED_WIDTH() / s) / 2));
+        Game.s2wY = (int)(((mouseY - (Window.REAL_HEIGHT() / 2 - Window.SCALED_HEIGHT() / 2)) / s) - (-y - height / 2 + (Window.SCALED_HEIGHT() / s) / 2));*/
+
+        /*double scalingFactorX = (double) Window.SCALED_WIDTH() / Window.REAL_WIDTH();
+        double scalingFactorY = (double) Window.SCALED_HEIGHT() / Window.REAL_HEIGHT();
+
+        int translationX = (Window.REAL_WIDTH() - Window.SCALED_WIDTH()) / 2;
+        int translationY = (Window.REAL_HEIGHT() - Window.SCALED_HEIGHT()) / 2;
+
+        Game.s2wX = (int) (((mouseX - translationX) / scalingFactorX) - (-x - width / 2 + (Window.SCALED_WIDTH() / (scalingFactorX * s)) / 2));
+        Game.s2wY = (int) (((mouseY - translationY) / scalingFactorY) - (-y - height / 2 + (Window.SCALED_HEIGHT() / (scalingFactorY * s)) / 2));
+
+        lineX = Game.s2wX;
+        lineY = Game.s2wY;*/
+
+                /*Game.s2wX = (int)(mouseX/s-(Window.REAL_WIDTH() /2-Window.SCALED_WIDTH() /2)/s);
+                Game.s2wY = (int)(mouseY/s-(Window.REAL_HEIGHT()/2-Window.SCALED_HEIGHT()/2)/s);
+                lineX = (Game.s2wX - (-x - width/2 +(Window.SCALED_WIDTH() /s)/2));
+                lineY = (Game.s2wY - (-y - height/2+(Window.SCALED_HEIGHT()/s)/2));*/
+
+                /*Game.s2wX = (int) ((mouseX - (Window.REAL_WIDTH() / 2 - Window.SCALED_WIDTH() / 2)) / s);
+                Game.s2wY = (int) ((mouseY - (Window.REAL_HEIGHT() / 2 - Window.SCALED_HEIGHT() / 2)) / s);
+                lineX = (Game.s2wX - (-x - width / 2 + (Window.SCALED_WIDTH() / s) / 2));
+                lineY = (Game.s2wY - (-y - height / 2 + (Window.SCALED_HEIGHT() / s) / 2));*/
+
+                /*      double scalingFactorX = (double) Window.SCALED_WIDTH() / Window.REAL_WIDTH();
+                        double scalingFactorY = (double) Window.SCALED_HEIGHT() / Window.REAL_HEIGHT();
+                        System.out.println(String.format("SX:%f SY:%f", scalingFactorX, scalingFactorY));
+                        Game.s2wX = (int)((Window.SCALED_WIDTH() +((mouseX-Window.SCALED_WIDTH()/2)/s)+scalingFactorX));
+                        Game.s2wY = (int)((Window.SCALED_HEIGHT()+((mouseY-Window.SCALED_HEIGHT()/2)/s)+scalingFactorY));
+                        lineX = (int)(Game.s2wX - (-x - width/2  + (Window.REAL_WIDTH() /s)/2));
+                        lineY = (int)(Game.s2wY - (-y - height/2 + (Window.REAL_HEIGHT()/s)/2));*/
+
+                        /*double scalingFactorX = (double) Window.SCALED_WIDTH() / 720;
+                        double scalingFactorY = (double) Window.SCALED_HEIGHT() / 480;
+                        //System.out.println(String.format("(%f, %f)", scalingFactorX, scalingFactorY));
+                        Game.s2wX = (int)((mouseX - (Window.REAL_WIDTH() / 2 - 720 / 2)) / s);
+                        Game.s2wY = (int)((mouseY - (Window.REAL_HEIGHT() / 2 - 480 / 2)) / s);
+                        lineX = (int)(Game.s2wX - (-x - width / 2 + 720 / s / 2));
+                        lineY = (int)(Game.s2wY - (-y - height / 2 + 480 / s / 2));*/
