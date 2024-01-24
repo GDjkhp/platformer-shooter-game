@@ -287,7 +287,7 @@ public class WorldManager implements KeyListener {
     int NODE_SIZE = tileSize, WIDTH = width*NODE_SIZE, HEIGHT = height*NODE_SIZE, yOffset = -(height * NODE_SIZE - NODE_SIZE);
     Controller controller = new Controller();
 
-    // not actual png reader, it just a function responsible on placing walls for pathfinding
+    // not actual png reader, it's just a function responsible for placing walls for pathfinding
     public void png2MazeParser(int[][] tileData) {
         int width = tileData[tileData.length-1].length;
         int height = tileData.length;

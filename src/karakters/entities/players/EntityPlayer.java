@@ -37,7 +37,7 @@ public class EntityPlayer extends GameObject implements KeyListener, MouseListen
     int crouchHeight, realHeight;
 
     float lineX, lineY, mouseX, mouseY;
-    boolean rodOfDiscord = false;
+    boolean rodOfDiscord = true;
 
     // player abilities
     boolean stickyCeilings = false;
